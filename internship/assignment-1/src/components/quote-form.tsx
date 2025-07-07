@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { motion } from "framer-motion"
 
 const quotes: Record<string, string[]> = {
   motivation: [
@@ -43,6 +44,11 @@ export function QuoteForm() {
   const [topic, setTopic] = useState("")
   const [results, setResults] = useState<string[] | null>(null)
   const [error, setError] = useState("")
+  const [hydrated, setHydrated] = useState(false)
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -63,40 +69,70 @@ export function QuoteForm() {
       setResults(found)
     }
 
-    setTopic("") // Clear input
+    setTopic("")
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="topic">Topic</Label>
-        <Input
-          id="topic"
-          placeholder="e.g. motivation, success, coding"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-        />
-      </div>
+    <div className="space-y-6">
+      <Card className="bg-white/5 border border-white/10 backdrop-blur-md shadow-lg">
+        <CardContent className="p-6 space-y-6">
+          <div className="space-y-1 text-center">
+            <h2 className="text-lg font-semibold text-white">
+              Enter a topic to get inspired
+            </h2>
+            <p className="text-sm text-white/60">
+              Available: {Object.keys(quotes).join(", ")}
+            </p>
+          </div>
 
-      <Button type="submit" className="w-full">Generate Quotes</Button>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="topic" className="text-white">
+                Topic
+              </Label>
+              <Input
+                id="topic"
+                placeholder="e.g. motivation, coding, happiness"
+                className="bg-black/20 border border-white/20 text-white placeholder-white/50 focus:ring-purple-500"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+              />
+            </div>
 
-      <p className="text-sm text-muted-foreground text-center">
-        Available topics: {Object.keys(quotes).join(", ")}
-      </p>
+            <Button
+              type="submit"
+              className="w-full bg-purple-600 hover:bg-purple-700 transition-all"
+            >
+              Generate Quotes
+            </Button>
 
-      {error && (
-        <p className="text-sm text-red-500 font-medium text-center">{error}</p>
-      )}
+            {error && (
+              <p className="text-sm text-red-400 font-medium text-center">
+                {error}
+              </p>
+            )}
+          </form>
 
-      {results && (
-        <Card>
-          <CardContent className="p-4 space-y-2">
-            {results.map((quote, i) => (
-              <p key={i} className="text-muted-foreground text-sm">“{quote}”</p>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-    </form>
+          {hydrated && results && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="space-y-2 border-t border-white/10 pt-4">
+                {results.map((quote, i) => (
+                  <p
+                    key={i}
+                    className="text-sm text-white/80 text-center italic"
+                  >
+                    “{quote}”
+                  </p>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   )
 }
